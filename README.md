@@ -80,3 +80,10 @@ enum mgos_app_init_result mgos_app_init(void) {
 ## Testing
 
 This library has been tested with an ESP32 device connected to an ADF4350 device.
+
+The testing involved connecting the ADF4350 RFout pin to a spectrum analyser and checking
+the first 10 frequencies (set every 30 seconds) were correct as measured by the spectrum
+analyser (Anritsu MS2667C).
+The software was left running for 24 hours. After 24 hours the spectrum analyser was used 
+again to verify that the frequency hoping was still working and that the frequency as 
+measured by the spectrum analyser was correct.
