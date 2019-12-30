@@ -1,5 +1,5 @@
 # ADF4350
-Mongoose native SPI driver for the ADF4350 wideband synthesizer device.
+Mongoose native SPI driver for the ADF4350 wideband synthesizer device ([https://www.analog.com/en/products/adf4350.html](https://www.analog.com/en/products/adf4350.html)).
 
 ## Overview
 
