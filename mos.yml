@@ -1,0 +1,41 @@
+author: mongoose-os
+type: lib
+description: A driver library for the ADF4350 PLL device.
+version: 1.0
+platforms: [esp8266, esp32]
+
+sources:
+  - src
+
+includes:
+  - include
+
+#These are the defaults for the ADF4350 library but maybe redefined if required.
+config_schema:
+ - ["adf4350", "o",           {"title": "ADF4350 device settings"}]
+ - ["adf4350.ce_pin", "i", 4, {title:   "ADF43509 CE pin"}]
+ - ["adf4350.spi_cs", "i", 2, {title:   "The SPI CS connected to the ADF4350 LE pin (0,1 or 2)"}]
+
+#SPI bus defaults
+ - ["spi.enable",    "i", 1,  {title: "Enable SPI bus."}]
+ - ["spi.cs0_gpio",  "i", -1, {title: "The SPI bus CS0 pin."}]
+ - ["spi.cs1_gpio",  "i", -1, {title: "The SPI bus CS1 pin."}]
+ - ["spi.cs2_gpio",  "i", 5,  {title: "The SPI bus CS2 pin."}]
+ - ["spi.mosi_gpio", "i", 23, {title: "Connected to the ADF4350 DATA input."}]
+ - ["spi.miso_gpio", "i", 19, {title: "Not used as the ADF4350 only supports write opperations."}]
+ - ["spi.sclk_gpio", "i", 18, {title: "The SPI CLK line."}]
+ - ["debug.level",   "i", 2,  {title: "Debug Level"}]
+
+#If defined then extra ADF4350 debug is displayed on the serial console.
+cdefs:
+  ADF4350_DEBUG:
+
+libs:
+ - origin: https://github.com/mongoose-os-libs/spi
+
+tags:
+ - c
+ - spi
+ - docs:drivers:ADF4350 SPI
+
+manifest_version: 2017-09-29
