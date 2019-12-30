@@ -12,12 +12,11 @@ and 4.4 GHz. This library supports setting the ADF4350 RF ouptut from 137.5 MHz 
 Call the mgos_adf4350_freq() function passing in the frequency required. 
 The freq is in MHz.
 
-## Connecting the ADF4350 to the ESP32 or ESP8266
-
-The ADF4350 device is programmed via an SPI bus. The connections for this are 
-defined in the mos.yml file.
-
 ##Example application
+
+The ADF4350 device is programmed via an SPI bus. The hardware connections 
+required are defined in the config_schema section of the mos.yml file as
+shown below.
 
 ### mos.yml
 
