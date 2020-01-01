@@ -5,6 +5,8 @@
 static struct mgos_spi *spi;        //The spi bus from Mongoose os
 static struct mgos_spi_txn txn;     //The structure used to define SPI communication with the Mongoose OS SPI bus.
 
+static ADF4350Config adf4350Config;
+
 /**
  * @brief activate/deactivate the CE pin on the ADF4350 device.
  * @param active If true then the CE pin is activated, else the pin is
@@ -265,8 +267,6 @@ bool mgos_adf4350_freq(float freqMHz) {
 
   mgos_adf4350_activate_ce(true);
 
-  static ADF4350Config adf4350Config;
-
   setDefaultADF4350Config(&adf4350Config);
 
   if( freqMHz >= 2200) {
@@ -370,3 +370,62 @@ bool mgos_adf4350_freq(float freqMHz) {
   return true;
 }
 
+/**
+ * @brief Enable/disable RF output.
+ * @param enabled If 0 disable output, else enable.
+ * @return void
+ */
+void mgos_enable_output(unsigned char enabled) {
+    uint32_t reg4 = getADF4350Reg4(&adf4350Config);
+
+    if( enabled ) {
+        reg4|=1<<REG4_RF_OUTPUT_ENABLE_BIT;
+    }
+    else {
+        reg4&=~(1<<REG4_RF_OUTPUT_ENABLE_BIT);
+    }
+
+
+#ifdef ADF4350_DEBUG
+  LOG(LL_ERROR, ("%s: ADF4350 REG 4", __FUNCTION__) );
+#endif
+    mgos_adf4350_reg_wr(reg4);
+
+}
+
+/**
+ * @brief Set the RF output level.
+ * @param dBm The output level in dBm. A limited range is available.
+ *            Only -4, -1, 2 and 5 dBm are valid.
+ * @return 0 on success, -1 on error (I.E if one of the above values was not set).
+ */
+int8_t mgos_set_output_level(int8_t dBm) {
+    int32_t rc=-1;
+
+    if( dBm == -4 || dBm == -1 || dBm == 2 || dBm == 5 ) {
+        uint32_t regPwr = 0;
+        switch(dBm) {
+            case -4:
+                regPwr = REG4_OUTPUT_POWER_M4_DBM;
+                break;
+            case -1:
+                regPwr = REG4_OUTPUT_POWER_M1_DBM;
+                break;
+            case 2:
+                regPwr = REG4_OUTPUT_POWER_2_DBM;
+                break;
+            case 5:
+                regPwr = REG4_OUTPUT_POWER_5_DBM;
+                break;
+        }
+        uint32_t reg4 = getADF4350Reg4(&adf4350Config);
+        reg4&=~(3<<REG4_OUTPUT_POWER_BIT);
+        reg4|=regPwr<<REG4_OUTPUT_POWER_BIT;
+#ifdef ADF4350_DEBUG
+  LOG(LL_ERROR, ("%s: ADF4350 REG 4", __FUNCTION__) );
+#endif
+        mgos_adf4350_reg_wr(reg4);
+        rc=10;
+    }
+    return rc;
+}
