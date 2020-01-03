@@ -251,7 +251,8 @@ typedef struct _Fraction {
 
 bool mgos_adf4350_init(void);
 bool mgos_adf4350_freq(float freqMHz);
-void mgos_enable_output(unsigned char enabled);
 int8_t mgos_set_output_level(int8_t dBm);
+void mgos_enable_output(bool enabled);
+void mgos_power_down(bool power_down);
 
 #endif

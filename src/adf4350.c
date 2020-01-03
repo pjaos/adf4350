@@ -372,10 +372,12 @@ bool mgos_adf4350_freq(float freqMHz) {
 
 /**
  * @brief Enable/disable RF output.
+ *        Note !!! disabling RF output sets output level ~ 40 dB down.
+ *             Powering off the device removes the output power (drops by > 70 dB)
  * @param enabled If 0 disable output, else enable.
  * @return void
  */
-void mgos_enable_output(unsigned char enabled) {
+void mgos_enable_output(bool enabled) {
     uint32_t reg4 = getADF4350Reg4(&adf4350Config);
 
     if( enabled ) {
@@ -428,4 +430,27 @@ int8_t mgos_set_output_level(int8_t dBm) {
         rc=10;
     }
     return rc;
+}
+
+/**
+ * @brief Power down the ADF4350 device
+ * @param enabled If 0 do not power down, else power down.
+ * @return void
+ */
+void mgos_power_down(bool power_down) {
+    uint32_t reg2 = getADF4350Reg2(&adf4350Config);
+
+    if( power_down ) {
+        reg2|=1<<REG2_POWER_DOWN_BIT;
+    }
+    else {
+        reg2&=~(1<<REG2_POWER_DOWN_BIT);
+    }
+
+
+#ifdef ADF4350_DEBUG
+  LOG(LL_ERROR, ("%s: ADF4350 REG 2", __FUNCTION__) );
+#endif
+    mgos_adf4350_reg_wr(reg2);
+
 }
