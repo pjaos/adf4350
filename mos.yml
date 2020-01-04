@@ -27,8 +27,8 @@ config_schema:
  - ["debug.level",   "i", 2,  {title: "Debug Level"}]
 
 #If defined then extra ADF4350 debug is displayed on the serial console.
-cdefs:
-  ADF4350_DEBUG:
+#cdefs:
+#  ADF4350_DEBUG:
 
 libs:
  - origin: https://github.com/mongoose-os-libs/spi
