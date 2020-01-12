@@ -182,6 +182,10 @@
 #define REG5_LOCK_DETECT_PIN_OP_LOW2             2
 #define REG5_LOCK_DETECT_PIN_OP_HIGH             3
 
+#define TWO_BIT_FIELD_MASK                      3
+#define THREE_BIT_FIELD_MASK                    7
+#define FOUR_BIT_FIELD_MASK                     0xf
+
 #define REF_FREQ_MHZ                            10.0 //The ADF4350 reference clock frequency
 
 #define SPI_CLOCK_HZ                            10000000    //10 MHz SPI clock
@@ -254,5 +258,9 @@ bool mgos_adf4350_freq(float freqMHz);
 int8_t mgos_set_output_level(int8_t dBm);
 void mgos_enable_output(bool enabled);
 void mgos_power_down(bool power_down);
+void mgos_set_low_noise_mode(bool enabled);
+void mgos_set_muxout(int mode);
+void mgos_set_charge_pump_current(int current);
+void mgos_set_lock_detect_mode(int mode);
 
 #endif

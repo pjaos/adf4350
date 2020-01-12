@@ -91,7 +91,12 @@ bool mgos_adf4350_init(void) {
  */
 static uint32_t getADF4350Reg5(ADF4350Config *adf4350Config) {
     uint32_t reg5;
-    reg5 = 0x00180000 | REG5; //The Analog devices tool sets reserved bits so we set the same here
+    //The Analog devices tool (Windows demo GUI) sets reserved bits in reg5 (0x00180000).
+    //Previously we did the same here. However the device appears to work
+    //without setting these bits. This comment records this in case an
+    //issue becomes apparent that maybe related to these
+    //undocumented reserved bits.
+    reg5 = 0x00000000 | REG5;
     reg5 |= adf4350Config->Reg5.LD_PIN_MODE<<REG5_LD_PIN_MODE_BIT;
     return reg5;
 }
@@ -421,7 +426,7 @@ int8_t mgos_set_output_level(int8_t dBm) {
                 break;
         }
         uint32_t reg4 = getADF4350Reg4(&adf4350Config);
-        reg4&=~(3<<REG4_OUTPUT_POWER_BIT);
+        reg4&=~(TWO_BIT_FIELD_MASK<<REG4_OUTPUT_POWER_BIT);
         reg4|=regPwr<<REG4_OUTPUT_POWER_BIT;
 #ifdef ADF4350_DEBUG
   LOG(LL_ERROR, ("%s: ADF4350 REG 4", __FUNCTION__) );
@@ -452,5 +457,122 @@ void mgos_power_down(bool power_down) {
   LOG(LL_ERROR, ("%s: ADF4350 REG 2", __FUNCTION__) );
 #endif
     mgos_adf4350_reg_wr(reg2);
+
+}
+
+/**
+ * @brief Set low noise/low spur modes
+ * @param enabled If true set low noise mode. If False set low spur mode.
+ * @return void
+ */
+void mgos_set_low_noise_mode(bool enabled) {
+    uint32_t reg2 = getADF4350Reg2(&adf4350Config);
+
+    //Both bits low for low noise mode
+    reg2&=~(TWO_BIT_FIELD_MASK<<REG2_LOW_NOISE_AND_LOW_SPUR_MODES_BIT);
+
+    if( !enabled ) {
+        reg2|=REG2_LOW_SPUR_MODE<<REG2_LOW_NOISE_AND_LOW_SPUR_MODES_BIT;
+    }
+
+#ifdef ADF4350_DEBUG
+  LOG(LL_ERROR, ("%s: ADF4350 REG 2", __FUNCTION__) );
+#endif
+    mgos_adf4350_reg_wr(reg2);
+
+}
+
+
+/**
+ * @brief Set muxout pin mode.
+ * @param mode The mode may be any of the following.
+ * REG2_MUXOUT_BIT
+ * REG2_MUXOUT_THREE_STATE_OUTPUT
+ * REG2_MUXOUT_DV
+ * REG2_MUXOUT_DGND
+ * REG2_MUXOUT_R_DIVIDER_OUTPUT
+ * REG2_MUXOUT_N_DIVIDER_OUTPUT
+ * REG2_MUXOUT_ANALOG_LOCK_DETECT
+ * REG2_MUXOUT_DIGITAL_LOCK_DETECT
+ * REG2_MUXOUT_RESERVED
+ * @return void
+ */
+void mgos_set_muxout(int mode) {
+    uint32_t reg2 = getADF4350Reg2(&adf4350Config);
+
+    if( mode <= REG2_MUXOUT_RESERVED ) {
+      //Set the field bits low
+      reg2&=~(THREE_BIT_FIELD_MASK<<REG2_MUXOUT_BIT);
+      //Set the required mode
+      reg2|=mode<<REG2_MUXOUT_BIT;
+    }
+
+#ifdef ADF4350_DEBUG
+  LOG(LL_ERROR, ("%s: ADF4350 REG 2", __FUNCTION__) );
+#endif
+    mgos_adf4350_reg_wr(reg2);
+
+}
+
+
+
+/**
+ * @brief Set charge pump setting.
+ * @param current The setting may be any of the following.
+ * REG2_CHARGE_PUMP_CURRENT_0_31_MA
+ * REG2_CHARGE_PUMP_CURRENT_0_63_MA
+ * REG2_CHARGE_PUMP_CURRENT_0_94_MA
+ * REG2_CHARGE_PUMP_CURRENT_1_25_MA
+ * REG2_CHARGE_PUMP_CURRENT_1_56_MA
+ * REG2_CHARGE_PUMP_CURRENT_1_88_MA
+ * REG2_CHARGE_PUMP_CURRENT_2_19_MA
+ * REG2_CHARGE_PUMP_CURRENT_2_50_MA
+ * REG2_CHARGE_PUMP_CURRENT_2_81_MA
+ * REG2_CHARGE_PUMP_CURRENT_3_13_MA
+ * REG2_CHARGE_PUMP_CURRENT_3_44_MA
+ * REG2_CHARGE_PUMP_CURRENT_3_75_MA
+ * REG2_CHARGE_PUMP_CURRENT_4_06_MA
+ * REG2_CHARGE_PUMP_CURRENT_4_38_MA
+ * REG2_CHARGE_PUMP_CURRENT_4_69_MA
+ * REG2_CHARGE_PUMP_CURRENT_5_00_MA
+ */
+void mgos_set_charge_pump_current(int current) {
+    uint32_t reg2 = getADF4350Reg2(&adf4350Config);
+
+    if( current >= REG2_CHARGE_PUMP_CURRENT_0_31_MA && current <= REG2_CHARGE_PUMP_CURRENT_5_00_MA ) {
+      //Set the field bits low
+      reg2&=~(FOUR_BIT_FIELD_MASK<<REG2_CHARGE_PUMP_CURRENT_BIT);
+      //Set the required current
+      reg2|=current<<REG2_CHARGE_PUMP_CURRENT_BIT;
+    }
+
+#ifdef ADF4350_DEBUG
+  LOG(LL_ERROR, ("%s: ADF4350 REG 2", __FUNCTION__) );
+#endif
+    mgos_adf4350_reg_wr(reg2);
+
+}
+
+/**
+ * @brief Set the lock detect mode.
+ * @param mode The lock detect mode may be set to the following
+ * REG5_LOCK_DETECT_PIN_OP_LOW1
+ * REG5_LOCK_DETECT_PIN_OP_DIGITAL
+ * REG5_LOCK_DETECT_PIN_OP_HIGH
+ * @return void
+ */
+void mgos_set_lock_detect_mode(int mode) {
+    uint32_t reg5 = getADF4350Reg5(&adf4350Config);
+
+    if( mode <= REG5_LOCK_DETECT_PIN_OP_HIGH && mode != REG5_LOCK_DETECT_PIN_OP_LOW2 ) {
+      //Set the field bits low
+      reg5&=~(TWO_BIT_FIELD_MASK<<REG5_LD_PIN_MODE_BIT);
+      //Set the required current
+      reg5|=mode<<REG5_LD_PIN_MODE_BIT;
+    }
+#ifdef ADF4350_DEBUG
+  LOG(LL_ERROR, ("%s: ADF4350 REG 5", __FUNCTION__) );
+#endif
+    mgos_adf4350_reg_wr(reg5);
 
 }
